@@ -1,5 +1,4 @@
 import time as t
-from numpy import split
 import pandas as pd
 from CONEXAO import create_connection_postgre
 from IO_DATA import fill_table, get_data_from_database
@@ -80,7 +79,7 @@ if __name__ == '__main__':
         return df_localidade
 
     def load_dim_localidade(df_localidade, conn_output):
-        fill_table(df_localidade, conn_output, 'D_LOCALIDADE', 1305)
+        fill_table(df_localidade, conn_output, 'D_LOCALIDADE', 1305, 'SK_LOCALIDADE')
 
     def run_dim_localidade(conn_input, conn_output):
         try:
