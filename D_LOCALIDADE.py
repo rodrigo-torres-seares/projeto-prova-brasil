@@ -35,23 +35,51 @@ if __name__ == '__main__':
 
     def extract_dim_localidade(conn_input):
         print('extracting data...')
-        return get_data_from_database(conn_input,
-                                       'select sra."ID_UF", \
-                                        sra."ID_MUNICIPIO" from\
-                                        "STAGE_RESULTADO_ALUNO" sra ;'
-                )
-      
+        df_cod_municipio_uf = get_data_from_database(conn_input,
+                                       'select \
+                                            sra."ID_UF", \
+                                            sra."ID_MUNICIPIO" \
+                                        from "STAGE_RESULTADO_ALUNO" sra ;'
+                                    )
+
+        df_municipios =  get_data_from_database(conn_input,
+                                       'select \
+                                            sdi."Cod.",\
+                                            sdi."Regiao"\
+                                        from "STAGE_DADOS_IBGE" sdi\
+	                                    where sdi."Nivel" = '+ "'MU'" + ';'  
+                                    )
+        
+        df_uf =  get_data_from_database(conn_input,
+                                       'select \
+                                            sdi."Cod.",\
+                                            sdi."Regiao"\
+                                        from "STAGE_DADOS_IBGE" sdi\
+	                                    where sdi."Nivel" = ' + "'UF'" + ';'  
+                                    )
+
+        df_localidade = pd.merge(df_cod_municipio_uf, df_uf, left_on='ID_UF', right_on='Cod.')
+        df_localidade = pd.merge(df_localidade, df_municipios, left_on='ID_MUNICIPIO', right_on='Cod.')
+        return df_localidade
 
     def treat_dim_localidade(df_localidade):
         print('treating data...')
+        
         df_localidade.rename(columns={
             'ID_UF': 'CD_UF',
-            'ID_MUNICIPIO': 'CD_MUNICIPIO'
+            'ID_MUNICIPIO': 'CD_MUNICIPIO',
+            'Regiao_x': 'NO_UF',
+            'Regiao_y': 'NO_MUNICIPIO'
         }, inplace=True)
+        
+        df_localidade.pop('Cod._x')
+        df_localidade.pop('Cod._y')
+        
+        print(df_localidade)
         return df_localidade
 
     def load_dim_localidade(df_localidade, conn_output):
-        fill_table(df_localidade, conn_output, 'D_LOCALIDADE', 45)
+        fill_table(df_localidade, conn_output, 'D_LOCALIDADE', 2610)
 
     def run_dim_localidade(conn_input, conn_output):
         try:
