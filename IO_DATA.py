@@ -12,19 +12,15 @@ def read_file(path, delimiter):  # leitura do arquivo
 
 
 # função para inserir dados no banco de dados
-def insert_data(data,
-                connection,
-                table,
-                action,
-                use_index,
-                index_name):
+def insert_data(data, connection, table, action, size):
     (
-        data.to_sql(table,
-                    con=connection,
-                    if_exists=action,
-                    index=use_index,
-                    index_label=index_name
-                    )
+        data.to_sql(
+                table,
+                con=connection,
+                if_exists=action,
+                index=False,
+                chunksize=size
+                )
     )
 
 

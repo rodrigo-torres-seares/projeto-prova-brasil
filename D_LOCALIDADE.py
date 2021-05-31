@@ -1,7 +1,7 @@
 import time as t
 import pandas as pd
 from CONEXAO import create_connection_postgre
-from IO_DATA import fill_table, get_data_from_database
+from IO_DATA import insert_data, get_data_from_database
 
 pd.options.display.float_format = '{:.2f}'.format
 
@@ -32,10 +32,11 @@ if __name__ == '__main__':
 
     def extract_dim_localidade(conn_input):
         print('extracting data...')
-        df_cod_municipio_uf = get_data_from_database(
+        df_resultado_aluno = get_data_from_database(
             conn_input,
-            f'select sra."ID_UF", sra."ID_MUNICIPIO"\
-            from "STAGE_RESULTADO_ALUNO" sra ;'
+            f'select distinct sra."ID_UF", sra."ID_MUNICIPIO"\
+            from "STAGE_RESULTADO_ALUNO" sra;'
+
         )
 
         df_municipios = get_data_from_database(
@@ -45,7 +46,7 @@ if __name__ == '__main__':
             where sdi."Nivel" = '"'MU'"';'
         )
 
-        df_uf = get_data_from_database(
+        df_ufs = get_data_from_database(
             conn_input,
             f'select sdi."Cod.", sdi."Regiao"\
             from "STAGE_DADOS_IBGE" sdi\
@@ -53,18 +54,21 @@ if __name__ == '__main__':
         )
 
         df_localidade = pd.merge(
-            df_cod_municipio_uf,
-            df_uf,
+            df_resultado_aluno,
+            df_ufs,
             left_on='ID_UF',
-            right_on='Cod.'
+            right_on='Cod.',
+            how='inner'
         )
 
         df_localidade = pd.merge(
             df_localidade,
             df_municipios,
             left_on='ID_MUNICIPIO',
-            right_on='Cod.'
+            right_on='Cod.',
+            how='inner'
         )
+
         return df_localidade
 
 
@@ -84,16 +88,22 @@ if __name__ == '__main__':
         df_localidade['NO_MUNICIPIO'] = df_localidade['NO_MUNICIPIO'] \
             .apply(lambda x: x[:-5])
 
+        sk_data = range(1, df_localidade.shape[0] + 1)
+        df_localidade['SK_LOCALIDADE'] = pd.Series(
+            data=sk_data,
+            name='SK_LOCALIDADE'
+        )
+
         return df_localidade
 
 
     def load_dim_localidade(df_localidade, conn_output):
-        fill_table(
+        insert_data(
             df_localidade,
             conn_output,
             'D_LOCALIDADE',
-            1305, True,
-            'SK_LOCALIDADE'
+            'replace',
+            2000
         )
 
 

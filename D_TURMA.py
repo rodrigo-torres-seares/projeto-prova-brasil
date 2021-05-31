@@ -1,7 +1,7 @@
 import time as t
 import pandas as pd
 from CONEXAO import create_connection_postgre
-from IO_DATA import fill_table, get_data_from_database
+from IO_DATA import insert_data, get_data_from_database
 
 pd.options.display.float_format = '{:.2f}'.format
 
@@ -34,11 +34,12 @@ if __name__ == '__main__':
         print('extracting data...')
         df_turma = get_data_from_database(
             conn_input,
-            f'select sra."ID_TURMA" , sra."ID_TURNO" , sra."ID_SERIE" \
-            from "STAGE_RESULTADO_ALUNO" sra ;'
+            f'select distinct sra."ID_TURMA",\
+            sra."ID_TURNO" , sra."ID_SERIE" \
+            from "STAGE_RESULTADO_ALUNO" sra;'
         )
-        return df_turma
 
+        return df_turma
 
     def treat_dim_turma(df_turma):
         print('treating data...')
@@ -69,17 +70,22 @@ if __name__ == '__main__':
                  if x == 9 else
                  'Não informado'
                  )
+        sk_data = range(1, df_turma.shape[0] + 1)
+        df_turma['SK_TURMA'] = pd.Series(
+            data=sk_data,
+            name='SK_TURMA'
+        )
+
         return df_turma
 
 
     def load_dim_turma(df_turma, conn_output):
-        fill_table(
+        insert_data(
             df_turma,
             conn_output,
             'D_TURMA',
-            1305,
-            True,
-            'SK_TURMA'
+            'replace',
+            2000
         )
 
 
@@ -89,6 +95,7 @@ if __name__ == '__main__':
                 extract_dim_turma(conn_input)
                 .pipe(treat_dim_turma)
                 .pipe(load_dim_turma, conn_output)
+
             )
         except Exception as e:
             print(e)

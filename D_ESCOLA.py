@@ -1,7 +1,7 @@
 import time as t
 import pandas as pd
 from CONEXAO import create_connection_postgre
-from IO_DATA import fill_table, get_data_from_database
+from IO_DATA import insert_data, get_data_from_database
 
 pd.options.display.float_format = '{:.2f}'.format
 
@@ -29,32 +29,16 @@ if __name__ == '__main__':
         POSTGRES_PORT
     )
 
-
     def extract_dim_escola(conn_input):
         print('extracting data...')
-        df_stage_escolas = get_data_from_database(
+        df_escola = get_data_from_database(
             conn_input,
             'select se."PK_COD_ENTIDADE", se."NO_ENTIDADE", \
                     se."ID_DEPENDENCIA_ADM", se."ID_LOCALIZACAO" \
             from "STAGE_ESCOLAS" se;'
         )
 
-        df_stage_result_aluno = get_data_from_database(
-            conn_input,
-            'select sra."ID_ESCOLA" , sra."ID_LOCALIZACAO", \
-                    sra."ID_DEPENDENCIA_ADM" \
-            from "STAGE_RESULTADO_ALUNO" sra ;'
-        )
-
-        df_escola = pd.merge(
-            df_stage_escolas,
-            df_stage_result_aluno,
-            left_on='PK_COD_ENTIDADE',
-            right_on='ID_ESCOLA'
-        )
-
         return df_escola
-
 
     def treat_dim_escola(df_escola):
         print('treating data...')
@@ -62,35 +46,34 @@ if __name__ == '__main__':
         df_escola.rename(columns={
             'PK_COD_ENTIDADE': 'CD_ESCOLA',
             'NO_ENTIDADE': 'NO_ESCOLA',
-            'ID_DEPENDENCIA_ADM_x': 'CD_DEPENDENCIA_ADM',
-            'ID_LOCALIZACAO_x': 'CD_LOCALIZACAO'
+            'ID_DEPENDENCIA_ADM': 'CD_DEPENDENCIA_ADM',
+            'ID_LOCALIZACAO': 'CD_LOCALIZACAO'
         }, inplace=True)
 
-        df_escola.pop('ID_LOCALIZACAO_y')
-        df_escola.pop('ID_DEPENDENCIA_ADM_y')
-        df_escola.pop('ID_ESCOLA')
         df_escola['NO_LOCALIZACAO'] = df_escola['CD_LOCALIZACAO'] \
             .map(lambda x: 'Urbana' if x == 1 else 'Rural')
 
         df_escola['NO_DEPENDENCIA_ADM'] = df_escola['CD_DEPENDENCIA_ADM'] \
             .map(lambda x:
-                 'Federal'
-                 if x == 1 else 'Estadual'
-                 if x == 2 else 'Municipal'
+                 'Federal' if x == 1 else
+                 'Estadual' if x == 2 else 'Municipal'
                  )
+        sk_data = range(1, df_escola.shape[0] + 1)
+        df_escola['SK_ESCOLA'] = pd.Series(
+            data=sk_data,
+            name='SK_ESCOLA'
+        )
+
         return df_escola
 
-
     def load_dim_escola(df_escola, conn_output):
-        fill_table(
+        insert_data(
             df_escola,
             conn_output,
             'D_ESCOLA',
-            1305,
-            True,
-            'SK_ESCOLA'
+            'replace',
+            2000
         )
-
 
     def run_dim_escola(conn_input, conn_output):
         try:
@@ -101,7 +84,6 @@ if __name__ == '__main__':
             )
         except Exception as e:
             print(e)
-
 
     start = t.time()
     run_dim_escola(conn_stage, conn_dw)
