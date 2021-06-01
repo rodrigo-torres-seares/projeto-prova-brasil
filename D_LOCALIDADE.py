@@ -94,6 +94,39 @@ if __name__ == '__main__':
             name='SK_LOCALIDADE'
         )
 
+        d_missing = {
+            'CD_UF': [-1],
+            'NO_UF': ['Não informado'],
+            'CD_MUNICIPIO': [-1],
+            'NO_MUNICIPIO': ['Não informado'],
+            'SK_LOCALIDADE': [-1]
+        }
+
+        d_not_applicable = {
+            'CD_UF': [-2],
+            'NO_UF': ['Não aplicável'],
+            'CD_MUNICIPIO': [-2],
+            'NO_MUNICIPIO': ['Não aplicável'],
+            'SK_LOCALIDADE': [-2]
+        }
+
+        d_unknown = {
+            'CD_UF': [-3],
+            'NO_UF': ['Desconhecido'],
+            'CD_MUNICIPIO': [-3],
+            'NO_MUNICIPIO': ['Desconhecido'],
+            'SK_LOCALIDADE': [-3]
+        }
+
+        df_missing = pd.DataFrame(data=d_missing)
+        df_not_applicable = pd.DataFrame(data=d_not_applicable)
+        df_unknown = pd.DataFrame(data=d_unknown)
+
+        df_localidade = pd.concat(
+            [df_missing, df_not_applicable, df_unknown, df_localidade],
+            ignore_index=True
+        )
+
         return df_localidade
 
 

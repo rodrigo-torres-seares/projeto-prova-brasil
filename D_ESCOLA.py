@@ -50,10 +50,10 @@ if __name__ == '__main__':
             'ID_LOCALIZACAO': 'CD_LOCALIZACAO'
         }, inplace=True)
 
-        df_escola['NO_LOCALIZACAO'] = df_escola['CD_LOCALIZACAO'] \
+        df_escola['DS_LOCALIZACAO'] = df_escola['CD_LOCALIZACAO'] \
             .map(lambda x: 'Urbana' if x == 1 else 'Rural')
 
-        df_escola['NO_DEPENDENCIA_ADM'] = df_escola['CD_DEPENDENCIA_ADM'] \
+        df_escola['DS_DEPENDENCIA_ADM'] = df_escola['CD_DEPENDENCIA_ADM'] \
             .map(lambda x:
                  'Federal' if x == 1 else
                  'Estadual' if x == 2 else 'Municipal'
@@ -62,6 +62,44 @@ if __name__ == '__main__':
         df_escola['SK_ESCOLA'] = pd.Series(
             data=sk_data,
             name='SK_ESCOLA'
+        )
+
+        d_missing = {
+            'CD_ESCOLA': [-1],
+            'NO_ESCOLA': ['Não informado'],
+            'CD_DEPENDENCIA_ADM': [-1],
+            'DS_DEPENDENCIA_ADM': ['Não informado'],
+            'CD_LOCALIZACAO': [-1],
+            'DS_LOCALIZACAO': ['Não informado'],
+            'SK_ESCOLA': [-1]
+        }
+
+        d_not_applicable = {
+            'CD_ESCOLA': [-2],
+            'NO_ESCOLA': ['Não aplicável'],
+            'CD_DEPENDENCIA_ADM': [-2],
+            'DS_DEPENDENCIA_ADM': ['Não aplicável'],
+            'CD_LOCALIZACAO': [-2],
+            'DS_LOCALIZACAO': ['Não aplicável'],
+            'SK_ESCOLA': [-2]
+        }
+
+        d_unknown = {
+            'CD_ESCOLA': [-3],
+            'NO_ESCOLA': ['Desconhecido'],
+            'CD_DEPENDENCIA_ADM': [-3],
+            'DS_DEPENDENCIA_ADM': ['Desconhecido'],
+            'CD_LOCALIZACAO': [-3],
+            'DS_LOCALIZACAO': ['Desconhecido'],
+            'SK_ESCOLA': [-3]
+        }
+
+        df_missing = pd.DataFrame(data=d_missing)
+        df_not_applicable = pd.DataFrame(data=d_not_applicable)
+        df_unknown = pd.DataFrame(data=d_unknown)
+        df_escola = pd.concat(
+            [df_missing, df_not_applicable, df_unknown, df_escola],
+            ignore_index=True
         )
 
         return df_escola

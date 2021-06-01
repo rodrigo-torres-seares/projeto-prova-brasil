@@ -76,6 +76,42 @@ if __name__ == '__main__':
             name='SK_TURMA'
         )
 
+        d_missing = {
+            'CD_TURMA': [-1],
+            'CD_TURNO': [-1],
+            'CD_SERIE': [-1],
+            'DS_TURNO': ['Não informado'],
+            'DS_SERIE': ['Não informado'],
+            'SK_TURMA': [-1]
+        }
+
+        d_not_applicable = {
+            'CD_TURMA': [-2],
+            'CD_TURNO': [-2],
+            'CD_SERIE': [-2],
+            'DS_TURNO': ['Não aplicável'],
+            'DS_SERIE': ['Não aplicável'],
+            'SK_TURMA': [-2]
+        }
+
+        d_unknown = {
+            'CD_TURMA': [-3],
+            'CD_TURNO': [-3],
+            'CD_SERIE': [-3],
+            'DS_TURNO': ['Desconhecido'],
+            'DS_SERIE': ['Desconhecido'],
+            'SK_TURMA': [-3]
+        }
+
+        df_missing = pd.DataFrame(data=d_missing)
+        df_not_applicable = pd.DataFrame(data=d_not_applicable)
+        df_unknown = pd.DataFrame(data=d_unknown)
+
+        df_turma = pd.concat(
+            [df_missing, df_not_applicable, df_unknown, df_turma],
+            ignore_index=True
+        )
+
         return df_turma
 
 

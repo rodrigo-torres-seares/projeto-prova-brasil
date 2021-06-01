@@ -112,6 +112,48 @@ if __name__ == '__main__':
                             if len(x) > 1 else -1)
         )
 
+        d_missing = {
+            'NU_ANO_PROVA': [-1],
+            'FL_PREENCHIMENTO': [-1],
+            'FL_PROFICIENCIA': [-1],
+            'VL_PROFICIENCIA_LP_SAEB': [-1],
+            'VL_PROFICIENCIA_MT_SAEB': [-1],
+            'SK_LOCALIDADE': [-1],
+            'SK_TURMA': [-1],
+            'SK_ESCOLA': [-1]
+        }
+
+        d_not_applicable = {
+            'NU_ANO_PROVA': [-2],
+            'FL_PREENCHIMENTO': [-2],
+            'FL_PROFICIENCIA': [-2],
+            'VL_PROFICIENCIA_LP_SAEB': [-2],
+            'VL_PROFICIENCIA_MT_SAEB': [-2],
+            'SK_LOCALIDADE': [-2],
+            'SK_TURMA': [-2],
+            'SK_ESCOLA': [-2]
+        }
+
+        d_unknown = {
+            'NU_ANO_PROVA': [-3],
+            'FL_PREENCHIMENTO': [-3],
+            'FL_PROFICIENCIA': [-3],
+            'VL_PROFICIENCIA_LP_SAEB': [-3],
+            'VL_PROFICIENCIA_MT_SAEB': [-3],
+            'SK_LOCALIDADE': [-3],
+            'SK_TURMA': [-3],
+            'SK_ESCOLA': [-3]
+        }
+
+        df_missing = pd.DataFrame(data=d_missing)
+        df_not_applicable = pd.DataFrame(data=d_not_applicable)
+        df_unknown = pd.DataFrame(data=d_unknown)
+
+        df_resultado_aluno = pd.concat(
+            [df_missing, df_not_applicable, df_unknown, df_resultado_aluno],
+            ignore_index=True
+        )
+
         return df_resultado_aluno
 
     def load_fato_prova(df_resultado_aluno, conn_output):
