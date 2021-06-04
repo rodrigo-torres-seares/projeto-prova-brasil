@@ -28,7 +28,7 @@ if __name__ == '__main__':
         POSTGRES_PASS,
         POSTGRES_PORT
     )
-
+#Pq tem dois create connection ? 
 
     def extract_dim_localidade(conn_input):
         print('extracting data...')
@@ -38,13 +38,16 @@ if __name__ == '__main__':
             from "STAGE_RESULTADO_ALUNO" sra;'
 
         )
+        #Pq vc buscou o dados de municípios e uf da stage resultado aluno e não utilizou?
 
+               
         df_municipios = get_data_from_database(
             conn_input,
             f'select sdi."Cod.", sdi."Regiao"\
             from "STAGE_DADOS_IBGE" sdi\
             where sdi."Nivel" = '"'MU'"';'
         )
+        
 
         df_ufs = get_data_from_database(
             conn_input,
@@ -54,7 +57,8 @@ if __name__ == '__main__':
         )
 
         df_localidade = pd.merge(
-            df_resultado_aluno,
+            
+            ,
             df_ufs,
             left_on='ID_UF',
             right_on='Cod.',
@@ -128,7 +132,10 @@ if __name__ == '__main__':
         )
 
         return df_localidade
-
+    
+     #Depois da uma olhada no meu código pra ver a forma que foi feito para podermos padronizar os proximos projetos 
+    #Essa parte de tratamento podemos deixar mais "limpo" usando assign e Method Chaining
+    #tem exemplos no meu código e nesse site https://tomaugspurger.github.io/method-chaining.html
 
     def load_dim_localidade(df_localidade, conn_output):
         insert_data(
